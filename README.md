@@ -8,7 +8,8 @@ software.
 
 RawNNX is licensed under the [Apache-2.0 License](LICENSE). This licensing
 is inspired from the frequent use of Apache-2.0 and MIT licenses for machine
-learning model code.
+learning model code. RawNNX's source code and binary dependencies may be found
+under [licenses](licenses).
 
 RawNNX's license **does not cover** any machine learning models, training data,
 or dependencies which may be subject to further usage restrictions.
