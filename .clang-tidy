@@ -1,0 +1,44 @@
+---
+Checks: '*,
+  -abseil-*,
+  -altera-*,
+  -android-*,
+  -darwin-*,
+  -fuchsia-*,
+  -google-*,
+  -linuxkernel-*,
+  -llvm-*,
+  -llvmlibc-*,
+  -objc-*,
+  -zircon-*,
+
+  -cppcoreguidelines-non-private-member-variables-in-classes,
+  -misc-include-cleaner,
+  -misc-non-private-member-variables-in-classes,
+  -modernize-return-braced-init-list,
+  -modernize-use-nodiscard,
+  -modernize-use-trailing-return-type,
+  -readability-avoid-const-params-in-decls,
+  -readability-else-after-return
+'
+HeaderFileExtensions:
+  - ''
+  - h
+  - hpp
+ImplementationFileExtensions:
+  - c
+  - cc
+  - cpp
+WarningsAsErrors: ''
+HeaderFilterRegex: ''
+SystemHeaders: false
+FormatStyle: file
+
+CheckOptions:
+  - key: cppcoreguidelines-avoid-do-while.IgnoreMacros
+    value: true
+  - key: readability-identifier-length.IgnoredVariableNames
+    value: 'x|y|z|i|j|k|w|h|r|c|n'
+  - key: readability-identifier-length.IgnoredParameterNames
+    value: 'x|y|z|w|h'
+...

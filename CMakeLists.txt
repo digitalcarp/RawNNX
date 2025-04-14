@@ -13,14 +13,29 @@ include(cmake/StandardProjectSettings.cmake)
 rnx_force_out_of_source_builds()
 rnx_set_standard_settings()
 
-option(rawnnx_BUILD_SHARED_LIBS "Build using shared libraries" OFF)
 option(rawnnx_BUILD_RUNTIME_LINK_LIBS "Build for dynamic linking at runtime" OFF)
+option(rawnnx_BUILD_SHARED_LIBS "Build using shared libraries" OFF)
 option(rawnnx_BUILD_UTIL_TOOLS "Build utility CLI tools" ON)
-# option(rawnnx_WARNINGS_AS_ERRORS "Treat warnings as errors" OFF)
+
+option(rawnnx_DEVELOPER_MODE "Enable RawNNX developer mode (for contributors)" OFF)
+if(rawnnx_DEVELOPER_MODE)
+    option(rawnnx_ENABLE_CLANG_TIDY "Enable clang-tidy" OFF)
+    option(rawnnx_ENABLE_CPPCHECK "Enable CppCheck" OFF)
+    option(rawnnx_WARNINGS_AS_ERRORS "Treat warnings as errors" OFF)
+
+    include(cmake/StaticAnalyzers.cmake)
+    if(rawnnx_ENABLE_CLANG_TIDY)
+      rnx_enable_clang_tidy(${rawnnx_WARNINGS_AS_ERRORS})
+    endif()
+
+    if(rawnnx_ENABLE_CPPCHECK)
+      rnx_enable_cppcheck(${rawnnx_WARNINGS_AS_ERRORS})
+    endif()
+endif()
 
 if(PROJECT_IS_TOP_LEVEL)
-    option(rawnnx_BUILD_SANDBOX "Build sandbox demo" ON)
     option(rawnnx_BUILD_DEMOS "Build standalone model demos" ON)
+    option(rawnnx_BUILD_SANDBOX "Build sandbox demo" ON)
 endif()
 
 include(cmake/Dependencies.cmake)

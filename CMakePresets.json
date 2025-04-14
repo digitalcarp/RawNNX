@@ -1,0 +1,179 @@
+{
+    "version": 6,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 25,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "conf-common",
+            "description": "General settings that apply to all configurations",
+            "hidden": true,
+            "binaryDir": "${sourceDir}/build/${presetName}"
+        },
+        {
+            "name": "conf-unixlike-common",
+            "description": "Unix-like OS settings for gcc and clang toolchains",
+            "hidden": true,
+            "inherits": "conf-common",
+            "generator": "Ninja",
+            "condition": {
+                "type": "anyOf",
+                "conditions": [
+                    {
+                        "type": "inList",
+                        "string": "${hostSystemName}",
+                        "list": ["Linux", "Darwin"]
+                    },
+                    {
+                        "type": "matches",
+                        "string": "$env{MSYSTEM}",
+                        "regex": "MINGW64"
+                    },
+                    {
+                        "type": "matches",
+                        "string": "$env{MSYSTEM}",
+                        "regex": "UCRT64"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "unixlike-gcc-debug",
+            "displayName": "gcc Debug",
+            "description": "Target Unix-like OS with the gcc compiler, debug build type",
+            "inherits": "conf-unixlike-common",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "gcc",
+                "CMAKE_CXX_COMPILER": "g++",
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "unixlike-gcc-release",
+            "displayName": "gcc Release",
+            "description": "Target Unix-like OS with the gcc compiler, release build type",
+            "inherits": "conf-unixlike-common",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "gcc",
+                "CMAKE_CXX_COMPILER": "g++",
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+            }
+        },
+        {
+            "name": "unixlike-clang-debug",
+            "displayName": "clang Debug",
+            "description": "Target Unix-like OS with the clang compiler, debug build type",
+            "inherits": "conf-unixlike-common",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++",
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+        {
+            "name": "unixlike-clang-release",
+            "displayName": "clang Release",
+            "description": "Target Unix-like OS with the clang compiler, release build type",
+            "inherits": "conf-unixlike-common",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++",
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+            }
+        },
+        {
+            "name": "cmake-pedantic",
+            "description": "Enables a minimal set of warnings and errors",
+            "hidden": true,
+            "warnings": {
+                "dev": true,
+                "deprecated": true,
+                "uninitialized": false,
+                "unusedCli": true,
+                "systemVars": false
+            },
+            "errors": {
+                "dev": true,
+                "deprecated": true
+            }
+        },
+        {
+            "name": "dev-mode",
+            "description": "Enable developer mode options",
+            "hidden": true,
+            "inherits": "cmake-pedantic",
+            "cacheVariables": {
+                "rawnnx_DEVELOPER_MODE": "ON"
+            }
+        },
+        {
+            "name": "strict-warnings",
+            "description": "Promote warnings to errors",
+            "hidden": true,
+            "inherits": "dev-mode",
+            "cacheVariables": {
+                "rawnnx_WARNINGS_AS_ERRORS": "ON"
+            }
+        },
+        {
+            "name": "clang-tidy",
+            "description": "Enable clang-tidy",
+            "hidden": true,
+            "inherits": "dev-mode",
+            "cacheVariables": {
+                "rawnnx_ENABLE_CLANG_TIDY": "ON"
+            }
+        },
+        {
+            "name": "cppcheck",
+            "description": "Enable CppCheck",
+            "hidden": true,
+            "inherits": "dev-mode",
+            "cacheVariables": {
+                "rawnnx_ENABLE_CPPCHECK": "ON"
+            }
+        },
+        {
+            "name": "static-analysis",
+            "description": "Enable all static analysis tools",
+            "hidden": true,
+            "inherits": ["clang-tidy", "cppcheck"]
+        },
+        {
+            "name": "dev",
+            "inherits": ["dev-mode", "unixlike-gcc-release"],
+            "binaryDir": "${sourceDir}/build/dev",
+            "cacheVariables": {
+                "rawnnx_ENABLE_CLANG_TIDY": "OFF",
+                "rawnnx_ENABLE_CPPCHECK": "OFF",
+                "rawnnx_WARNINGS_AS_ERRORS": "OFF"
+            }
+        },
+        {
+            "name": "dev-strict",
+            "inherits": ["strict-warnings", "static-analysis", "dev"]
+        },
+        {
+            "name": "dev-debug",
+            "inherits": ["dev-mode", "unixlike-gcc-debug"],
+            "binaryDir": "${sourceDir}/build/debug"
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "dev",
+            "configurePreset": "dev"
+        },
+        {
+            "name": "dev-strict",
+            "inherits": "dev",
+            "configurePreset": "dev-strict"
+        },
+        {
+            "name": "dev-debug",
+            "configurePreset": "dev-debug"
+        }
+    ]
+}

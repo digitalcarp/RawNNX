@@ -40,6 +40,12 @@ macro(rnx_set_standard_settings)
         )
     endif()
 
+    if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+        set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}
+            CACHE PATH "Default install path" FORCE
+        )
+    endif()
+
     # Generate compile_commands.json to make it easier to work with clang based tools
     set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 endmacro()
