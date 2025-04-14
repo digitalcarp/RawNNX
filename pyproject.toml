@@ -1,0 +1,13 @@
+[project]
+name = "RawNNX"
+version = "0.0.0"
+description = "RawNNX developer and model export tools"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "onnx>=1.17.0",
+    "onnxruntime>=1.21.0",
+]
+
+[tool.black]
+# Use defaults for now

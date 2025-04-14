@@ -26,7 +26,8 @@ std::vector<NodeInfo> findInputNodeInfo(const Ort::Session& session);
 std::vector<NodeInfo> findOutputNodeInfo(const Ort::Session& session);
 
 template <class LogFunc>
-void printNodeInfo(LogFunc log, std::string_view title, const std::vector<NodeInfo>& nodes)
+void printNodeInfo(LogFunc log, std::string_view title,
+                   const std::vector<NodeInfo>& nodes)
 {
     std::invoke(log, title);
     for (const auto& node : nodes) {

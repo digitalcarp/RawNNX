@@ -24,4 +24,4 @@ inline bool startsWith(std::string_view str, std::string_view prefix)
     return std::string_view(str.data(), std::min(str.size(), prefix.size())) == prefix;
 }
 
-}  // namespace rnx
+} // namespace rnx

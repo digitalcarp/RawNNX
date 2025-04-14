@@ -14,13 +14,19 @@ import textwrap
 
 
 def name_pair(arg):
-    result = arg.split(',')
+    result = arg.split(",")
     if len(result) != 2:
-        raise argparse.ArgumentError('Name change must be two strings separated by a ","')
+        raise argparse.ArgumentError(
+            'Name change must be two strings separated by a ","'
+        )
     if len(result[0]) == 0:
-        raise argparse.ArgumentError('Name change must be two strings separated by a ","')
+        raise argparse.ArgumentError(
+            'Name change must be two strings separated by a ","'
+        )
     if len(result[1]) == 0:
-        raise argparse.ArgumentError('Name change must be two strings separated by a ","')
+        raise argparse.ArgumentError(
+            'Name change must be two strings separated by a ","'
+        )
     return result
 
 
@@ -29,44 +35,43 @@ def main(args) -> None:
 
     input_mapping = {}
     if args.inputs:
-        print('Input Mapping:')
+        print("Input Mapping:")
         for before, after in args.inputs:
             input_mapping[before] = after
-            print(f'{before} -> {after}')
+            print(f"{before} -> {after}")
         print()
-
 
     output_mapping = {}
     if args.outputs:
-        print('Output Mapping:')
+        print("Output Mapping:")
         for before, after in args.outputs:
             output_mapping[before] = after
-            print(f'{before} -> {after}')
+            print(f"{before} -> {after}")
         print()
 
-    print('Processing inputs...')
+    print("Processing inputs...")
     for node in onnx_model.graph.input:
         cur_name = node.name
         if cur_name in input_mapping:
             new_name = input_mapping[cur_name]
-            print(f'*** {cur_name} -> {new_name}')
+            print(f"*** {cur_name} -> {new_name}")
             node.name = new_name
         else:
-            print(f'    {cur_name}')
+            print(f"    {cur_name}")
 
     print()
-    print('Processing outputs...')
+    print("Processing outputs...")
     for node in onnx_model.graph.output:
         cur_name = node.name
         if cur_name in output_mapping:
             new_name = output_mapping[cur_name]
-            print(f'*** {cur_name} -> {new_name}')
+            print(f"*** {cur_name} -> {new_name}")
             node.name = new_name
         else:
-            print(f'    {cur_name}')
+            print(f"    {cur_name}")
 
     print()
-    print('Processing node connections...')
+    print("Processing node connections...")
     for node in onnx_model.graph.node:
         for i in range(len(node.input)):
             if node.input[i] in input_mapping:
@@ -82,9 +87,10 @@ def main(args) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description='Changes ONNX model input/output names',
+        description="Changes ONNX model input/output names",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=textwrap.dedent('''\
+        epilog=textwrap.dedent(
+            """\
             Example usage:
 
             uv run change_onnx_names.py --model in.onnx \\
@@ -93,15 +99,17 @@ if __name__ == "__main__":
                 --out_model out.onnx
 
             where "before,after" means the name "before" is changed to "after"
-            '''))
-    parser.add_argument('--model', type=str, required=True)
-    parser.add_argument('--inputs', type=name_pair, nargs='*')
-    parser.add_argument('--outputs', type=name_pair, nargs='*')
-    parser.add_argument('--out_model', type=str)
+            """
+        ),
+    )
+    parser.add_argument("--model", type=str, required=True)
+    parser.add_argument("--inputs", type=name_pair, nargs="*")
+    parser.add_argument("--outputs", type=name_pair, nargs="*")
+    parser.add_argument("--out_model", type=str)
 
     args = parser.parse_args()
 
     if not args.inputs and not args.outputs:
-        print('No names to change')
+        print("No names to change")
     else:
         main(args)

@@ -3,7 +3,8 @@
 
 #include "debug.h"
 
-const char* to_cstr(ONNXTensorElementDataType type) {
+const char* to_cstr(ONNXTensorElementDataType type)
+{
     // Neither an exhaustive nor ordered list of all possible enums.
     static std::unordered_map<ONNXTensorElementDataType, const char*> mapping = {
         {ONNX_TENSOR_ELEMENT_DATA_TYPE_UNDEFINED, "Undefined"},
@@ -20,8 +21,7 @@ const char* to_cstr(ONNXTensorElementDataType type) {
         {ONNX_TENSOR_ELEMENT_DATA_TYPE_INT16, "i16"},
         {ONNX_TENSOR_ELEMENT_DATA_TYPE_INT32, "i32"},
         {ONNX_TENSOR_ELEMENT_DATA_TYPE_INT64, "i64"},
-        {ONNX_TENSOR_ELEMENT_DATA_TYPE_BOOL, "bool"}
-    };
+        {ONNX_TENSOR_ELEMENT_DATA_TYPE_BOOL, "bool"}};
 
     auto it = mapping.find(type);
     return it == mapping.end() ? "Unknown" : it->second;
