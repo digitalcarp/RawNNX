@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: Copyright 2025 Daniel Gao
 
 function(rnx_target_cxx_standard CXX_TARGET)
-    target_compile_features(${CXX_TARGET} PUBLIC cxx_std_17)
+    target_compile_features(${CXX_TARGET} PUBLIC cxx_std_20)
     set_target_properties(${CXX_TARGET} PROPERTIES CXX_STANDARD_REQUIRED ON)
     set_target_properties(${CXX_TARGET} PROPERTIES CXX_EXTENSIONS OFF)
 endfunction()
