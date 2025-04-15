@@ -31,20 +31,20 @@ std::vector<NodeInfo> findInputNodeInfo(const Ort::Session& session)
 {
     std::vector<NodeInfo> result;
 
-    size_t num_input_nodes = session.GetInputCount();
+    const size_t num_input_nodes = session.GetInputCount();
     result.reserve(num_input_nodes);
 
-    auto memory_info = Ort::MemoryInfo::CreateCpu(OrtDeviceAllocator, OrtMemTypeCPU);
-    Ort::Allocator allocator(session, memory_info);
+    const auto memory_info = Ort::MemoryInfo::CreateCpu(OrtDeviceAllocator, OrtMemTypeCPU);
+    const Ort::Allocator allocator(session, memory_info);
 
-    for (int i = 0; i < num_input_nodes; i++) {
+    for (size_t i = 0; i < num_input_nodes; i++) {
         NodeInfo info;
 
-        auto name_ptr = session.GetInputNameAllocated(i, allocator);
+        const auto name_ptr = session.GetInputNameAllocated(i, allocator);
         info.name = std::string(name_ptr.get());
 
-        Ort::TypeInfo type_info(session.GetInputTypeInfo(i));
-        auto tensor_info = type_info.GetTensorTypeAndShapeInfo();
+        const Ort::TypeInfo type_info(session.GetInputTypeInfo(i));
+        const auto tensor_info = type_info.GetTensorTypeAndShapeInfo();
         info.dims = tensor_info.GetShape();
         info.type = tensor_info.GetElementType();
 
@@ -58,20 +58,20 @@ std::vector<NodeInfo> findOutputNodeInfo(const Ort::Session& session)
 {
     std::vector<NodeInfo> result;
 
-    size_t num_output_nodes = session.GetOutputCount();
+    const size_t num_output_nodes = session.GetOutputCount();
     result.reserve(num_output_nodes);
 
-    auto memory_info = Ort::MemoryInfo::CreateCpu(OrtDeviceAllocator, OrtMemTypeCPU);
-    Ort::Allocator allocator(session, memory_info);
+    const auto memory_info = Ort::MemoryInfo::CreateCpu(OrtDeviceAllocator, OrtMemTypeCPU);
+    const Ort::Allocator allocator(session, memory_info);
 
-    for (int i = 0; i < num_output_nodes; i++) {
+    for (size_t i = 0; i < num_output_nodes; i++) {
         NodeInfo info;
 
-        auto name_ptr = session.GetOutputNameAllocated(i, allocator);
+        const auto name_ptr = session.GetOutputNameAllocated(i, allocator);
         info.name = std::string(name_ptr.get());
 
-        Ort::TypeInfo type_info(session.GetOutputTypeInfo(i));
-        auto tensor_info = type_info.GetTensorTypeAndShapeInfo();
+        const Ort::TypeInfo type_info(session.GetOutputTypeInfo(i));
+        const auto tensor_info = type_info.GetTensorTypeAndShapeInfo();
         info.dims = tensor_info.GetShape();
         info.type = tensor_info.GetElementType();
 
