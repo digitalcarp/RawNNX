@@ -12,7 +12,7 @@ dev_preset := env("DEV_PRESET", "dev")
 debug_preset := env("DEBUG_PRESET", "dev-debug")
 strict_preset := env("STRICT_PRESET", "dev-strict")
 
-clang_tidy_export_dir := env("CLANG_TIDY_EXPORT_DIR", "clang-tidy-fixes")
+clang_tidy_export_dir := env("CLANG_TIDY_EXPORT_DIR", "build/dev/clang-tidy-fixes")
 
 default:
     @just help

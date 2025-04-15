@@ -11,6 +11,7 @@ macro(rnx_enable_clang_tidy WARNINGS_AS_ERRORS)
 
     set(CLANG_TIDY_OPTIONS
         ${CLANG_TIDY}
+        --allow-no-checks
         -extra-arg=-Wno-unknown-warning-option
         -extra-arg=-Wno-ignored-optimization-argument
         -extra-arg=-Wno-unused-command-line-argument)
@@ -23,7 +24,8 @@ macro(rnx_enable_clang_tidy WARNINGS_AS_ERRORS)
         endif()
     endif()
 
-    list(APPEND CLANG_TIDY_OPTIONS --header-filter="${PROJECT_SOURCE_DIR}/src/.*")
+    list(APPEND CLANG_TIDY_OPTIONS --header-filter="${PROJECT_SOURCE_DIR}/.*")
+    list(APPEND CLANG_TIDY_OPTIONS --exclude-header-filter="")
 
     if(${WARNINGS_AS_ERRORS})
         list(APPEND CLANG_TIDY_OPTIONS -warnings-as-errors=*)
@@ -34,6 +36,17 @@ macro(rnx_enable_clang_tidy WARNINGS_AS_ERRORS)
     set(CMAKE_CXX_CLANG_TIDY_EXPORT_FIXES_DIR "${CMAKE_BINARY_DIR}/clang-tidy-fixes")
     message("clang-tidy fixes will be exported to ${CMAKE_CXX_CLANG_TIDY_EXPORT_FIXES_DIR}")
 endmacro()
+
+function(rnx_disable_clang_tidy_for_third_party)
+    if(NOT rawnnx_ENABLE_CLANG_TIDY)
+        return()
+    endif()
+
+    message(STATUS "Writing .clang-tidy to ${CMAKE_BINARY_DIR}")
+
+    # Write .clang-tidy that disables all checks
+    file(WRITE ${CMAKE_BINARY_DIR}/.clang-tidy "Checks: '-*'")
+endfunction()
 
 macro(rnx_enable_cppcheck)
     find_program(CPPCHECK cppcheck)
@@ -62,7 +75,7 @@ macro(rnx_enable_cppcheck)
     list(APPEND CMAKE_CXX_CPPCHECK
         --enable=style,performance,warning,portability
         --inline-suppr
-        --suppress=*:*_deps/*
+        --suppress=*:${CMAKE_BINARY_DIR}/*
         --suppress=normalCheckLevelMaxBranches
         # We cannot act on a bug/missing feature of cppcheck.
         # If a file does not have an internalAstError, we get an

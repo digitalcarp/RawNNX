@@ -41,6 +41,8 @@ endif()
 include(cmake/Dependencies.cmake)
 rnx_setup_dependencies()
 
+rnx_disable_clang_tidy_for_third_party()
+
 # Header-only library for users that link RawNNX at runtime
 add_library(rawnnx_api INTERFACE)
 add_library(rawnnx::api ALIAS rawnnx_api)
@@ -60,12 +62,11 @@ endif()
 
 add_library(rawnnx::rawnnx ALIAS rawnnx_lib)
 rnx_target_cxx_standard(rawnnx_lib)
+rnx_target_compile_options(rawnnx_lib)
 
 add_subdirectory(demo)
 
-if(PROJECT_IS_TOP_LEVEL)
-    message(STATUS "Configuring RawNNX as a top level project...")
-else()
+if(NOT PROJECT_IS_TOP_LEVEL)
     return()
 endif()
 
