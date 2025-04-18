@@ -1,0 +1,4 @@
+---
+# Ignore clang-tidy checks in demo directory
+Checks: '-*'
+...

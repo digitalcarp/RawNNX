@@ -76,6 +76,7 @@ macro(rnx_enable_cppcheck)
         --enable=style,performance,warning,portability
         --inline-suppr
         --suppress=*:${CMAKE_BINARY_DIR}/*
+        --suppress=*:${PROJECT_SOURCE_DIR}/demo/*
         --suppress=normalCheckLevelMaxBranches
         # We cannot act on a bug/missing feature of cppcheck.
         # If a file does not have an internalAstError, we get an

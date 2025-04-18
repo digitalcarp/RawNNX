@@ -212,7 +212,7 @@ private:
     bool m_has_mask_input = false;
 };
 
-void handleMouseEvent(int action, int x, int y, int flags, void* userdata)
+void handleMouseEvent(int action, int x, int y, int /*flags*/, void* userdata)
 {
     auto demo = static_cast<Demo*>(userdata);
 
@@ -487,11 +487,6 @@ void Demo::encodeImage()
 
         cv::resize(m_orig_img, resized_img, new_size, scale, scale, interp);
     }
-
-    if (resized_img.cols != m_resize.new_width)
-        throw std::runtime_error("Wrong width after resize");
-    if (resized_img.rows != m_resize.new_height)
-        throw std::runtime_error("Wrong height after resize");
 
     auto shape = inputImageShape(m_resize.new_width, m_resize.new_height);
     auto input_image_tensor =

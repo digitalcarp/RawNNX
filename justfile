@@ -3,7 +3,6 @@ set dotenv-load
 # Populate .env with the following optional environment variables:
 #
 # DEV_PRESET    - dev config+build preset name
-# DEV_OUT_DIR   - dev and dev-strict output directory
 # DEBUG_PRESET  - debug config+build preset name
 # STRICT_PRESET - dev-strict config+build preset name
 #
@@ -30,16 +29,24 @@ config:
 build:
     cmake --build --preset {{dev_preset}}
 
-# Configure and build dev-strict preset
+# Configure dev-strict preset
 [group('dev')]
-strict:
+config-strict:
     cmake --preset {{strict_preset}}
+
+# Build dev-strict preset
+[group('dev')]
+build-strict:
     cmake --build --preset {{strict_preset}}
 
-# Configure and build dev-debug preset
+# Configure dev-debug preset
 [group('dev')]
-debug:
+config-debug:
     cmake --preset {{debug_preset}}
+
+# Build dev-debug preset
+[group('dev')]
+build-debug:
     cmake --build --preset {{debug_preset}}
 
 [group('lint')]
