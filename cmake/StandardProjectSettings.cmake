@@ -1,19 +1,6 @@
 # SPDX-License-Identifier: Apache-2.0
 # SPDX-FileCopyrightText: Copyright 2025 Daniel Gao
 
-function(rnx_target_cxx_standard CXX_TARGET)
-    target_compile_features(${CXX_TARGET} PUBLIC cxx_std_20)
-    set_target_properties(${CXX_TARGET} PROPERTIES CXX_STANDARD_REQUIRED ON)
-    set_target_properties(${CXX_TARGET} PROPERTIES CXX_EXTENSIONS OFF)
-endfunction()
-
-function(rnx_target_compile_options TARGET_NAME)
-    target_compile_options(${TARGET_NAME} PRIVATE -Wall -Wextra)
-    if(rawnnx_WARNINGS_AS_ERRORS)
-        set_target_properties(${TARGE_NAMET} PROPERTIES COMPILE_WARNING_AS_ERROR ON)
-    endif()
-endfunction()
-
 function(rnx_force_out_of_source_builds)
     get_filename_component(SRC_DIR "${CMAKE_SOURCE_DIR}" REALPATH)
     get_filename_component(BIN_DIR "${CMAKE_BINARY_DIR}" REALPATH)

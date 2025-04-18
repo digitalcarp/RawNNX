@@ -118,6 +118,15 @@
             }
         },
         {
+            "name": "asan",
+            "description": "Enable address sanitizer",
+            "hidden": true,
+            "inherits": "dev-mode",
+            "cacheVariables": {
+                "rawnnx_ENABLE_ASAN": "ON"
+            }
+        },
+        {
             "name": "clang-tidy",
             "description": "Enable clang-tidy",
             "hidden": true,
@@ -136,8 +145,8 @@
             }
         },
         {
-            "name": "static-analysis",
-            "description": "Enable all static analysis tools",
+            "name": "lint",
+            "description": "Enable all linting tools",
             "hidden": true,
             "inherits": ["clang-tidy", "cppcheck"]
         },
@@ -146,6 +155,7 @@
             "inherits": ["dev-mode", "unixlike-gcc-release"],
             "binaryDir": "${sourceDir}/build/dev",
             "cacheVariables": {
+                "rawnnx_ENABLE_ASAN": "OFF",
                 "rawnnx_ENABLE_CLANG_TIDY": "OFF",
                 "rawnnx_ENABLE_CPPCHECK": "OFF",
                 "rawnnx_WARNINGS_AS_ERRORS": "OFF"
@@ -153,7 +163,11 @@
         },
         {
             "name": "dev-strict",
-            "inherits": ["strict-warnings", "static-analysis", "dev"]
+            "inherits": ["strict-warnings", "lint", "dev"]
+        },
+        {
+            "name": "dev-asan",
+            "inherits": ["asan", "dev"]
         },
         {
             "name": "dev-debug",
@@ -168,8 +182,11 @@
         },
         {
             "name": "dev-strict",
-            "inherits": "dev",
             "configurePreset": "dev-strict"
+        },
+        {
+            "name": "dev-asan",
+            "configurePreset": "dev-asan"
         },
         {
             "name": "dev-debug",

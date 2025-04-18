@@ -19,6 +19,7 @@ option(rawnnx_BUILD_UTIL_TOOLS "Build utility CLI tools" ON)
 
 option(rawnnx_DEVELOPER_MODE "Enable RawNNX developer mode (for contributors)" OFF)
 if(rawnnx_DEVELOPER_MODE)
+    option(rawnnx_ENABLE_ASAN "Enable address sanitizer" OFF)
     option(rawnnx_ENABLE_CLANG_TIDY "Enable clang-tidy" OFF)
     option(rawnnx_ENABLE_CPPCHECK "Enable CppCheck" OFF)
     option(rawnnx_WARNINGS_AS_ERRORS "Treat warnings as errors" OFF)
@@ -42,6 +43,8 @@ include(cmake/Dependencies.cmake)
 rnx_setup_dependencies()
 
 rnx_disable_clang_tidy_for_third_party()
+
+include(cmake/CompileOptions.cmake)
 
 # Header-only library for users that link RawNNX at runtime
 add_library(rawnnx_api INTERFACE)
