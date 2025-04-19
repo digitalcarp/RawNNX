@@ -27,6 +27,7 @@ if(rawnnx_BUILD_DEMOS)
         target_link_libraries(${TARGET_NAME} PRIVATE ${DEMO_LIBS})
     endfunction()
 
+    rnx_setup_standalone_demo(birefnet birefnet_demo.cc)
     rnx_setup_standalone_demo(depth_anything depth_anything_demo.cc)
     rnx_setup_standalone_demo(mobilesam mobilesam_demo.cc)
     rnx_setup_standalone_demo(modnet modnet_demo.cc)
