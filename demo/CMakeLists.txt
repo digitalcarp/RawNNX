@@ -28,4 +28,5 @@ if(rawnnx_BUILD_DEMOS)
     endfunction()
 
     rnx_setup_standalone_demo(mobilesam mobilesam_demo.cc)
+    rnx_setup_standalone_demo(sam-hq sam_hq_demo.cc)
 endif()
