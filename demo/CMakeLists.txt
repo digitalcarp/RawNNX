@@ -27,6 +27,7 @@ if(rawnnx_BUILD_DEMOS)
         target_link_libraries(${TARGET_NAME} PRIVATE ${DEMO_LIBS})
     endfunction()
 
+    rnx_setup_standalone_demo(depth_anything depth_anything_demo.cc)
     rnx_setup_standalone_demo(mobilesam mobilesam_demo.cc)
     rnx_setup_standalone_demo(sam-hq sam_hq_demo.cc)
 endif()
