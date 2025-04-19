@@ -22,9 +22,10 @@ Checks: '*,
   -modernize-return-braced-init-list,
   -modernize-use-nodiscard,
   -modernize-use-trailing-return-type,
-  -readability-use-anyofallof,
   -readability-avoid-const-params-in-decls,
-  -readability-else-after-return
+  -readability-convert-member-functions-to-static,
+  -readability-else-after-return,
+  -readability-use-anyofallof
 '
 HeaderFileExtensions:
   - ''

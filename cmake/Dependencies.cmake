@@ -29,4 +29,8 @@ function(rnx_setup_dependencies)
         )
     endif()
 
+    if(rawnnx_BUILD_SANDBOX)
+        pkg_check_modules(GTKMM REQUIRED IMPORTED_TARGET gtkmm-4.0>=4.16)
+    endif()
+
 endfunction()
