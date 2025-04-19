@@ -64,26 +64,21 @@ void appendCudaProvider(Ort::SessionOptions& session_options)
     std::vector<const char*> keys{
         "device_id",
         // "gpu_mem_limit",
-        "arena_extend_strategy",
-        "cudnn_conv_algo_search",
-        "do_copy_in_default_stream",
+        "arena_extend_strategy", "cudnn_conv_algo_search", "do_copy_in_default_stream",
         "cudnn_conv_use_max_workspace"
         // "cudnn_conv1d_pad_to_nc1d"
     };
     std::vector<const char*> values{
         "0",
         // "2147483648",
-        "kNextPowerOfTwo",
-        "EXHAUSTIVE",
-        "1",
-        "1"
+        "kNextPowerOfTwo", "EXHAUSTIVE", "1", "1"
         // "1"
     };
 
-    Ort::ThrowOnError(api.UpdateCUDAProviderOptions(
-        cuda_options, keys.data(), values.data(), keys.size()));
-    Ort::ThrowOnError(api.SessionOptionsAppendExecutionProvider_CUDA_V2(
-        session_options, cuda_options));
+    Ort::ThrowOnError(api.UpdateCUDAProviderOptions(cuda_options, keys.data(),
+                                                    values.data(), keys.size()));
+    Ort::ThrowOnError(api.SessionOptionsAppendExecutionProvider_CUDA_V2(session_options,
+                                                                        cuda_options));
 
     api.ReleaseCUDAProviderOptions(cuda_options);
 }
@@ -143,7 +138,8 @@ Resize computeResize(int img_w, int img_h)
 
 std::vector<float> generateInputTensorData(const cv::Mat& img, const Resize& resize)
 {
-    cv::Size new_size{static_cast<int>(resize.tensor_w), static_cast<int>(resize.tensor_h)};
+    cv::Size new_size{static_cast<int>(resize.tensor_w),
+                      static_cast<int>(resize.tensor_h)};
     cv::Mat resized_img;
     cv::resize(img, resized_img, new_size, 0, 0, cv::INTER_CUBIC);
 
@@ -161,7 +157,8 @@ std::vector<float> generateInputTensorData(const cv::Mat& img, const Resize& res
     constexpr uint32_t B_TRANSPOSE = 2;
 
     // Normalize values to [-1, 1]
-    auto convert = [](int value) -> float {
+    auto convert = [](int value) -> float
+    {
         // mean = 0.5, std = 0.5
         return std::clamp((value - 127.5f) / 127.5f, -1.f, 1.f);
     };
@@ -173,9 +170,8 @@ std::vector<float> generateInputTensorData(const cv::Mat& img, const Resize& res
             uchar g = mat_data[row * resized_img.step + channels * col + 1];
             uchar r = mat_data[row * resized_img.step + channels * col + 2];
 
-            auto offset = [&](uint32_t transpose) {
-                return transpose * area + row * resize.tensor_w + col;
-            };
+            auto offset = [&](uint32_t transpose)
+            { return transpose * area + row * resize.tensor_w + col; };
 
             input[offset(R_TRANSPOSE)] = convert(r);
             input[offset(G_TRANSPOSE)] = convert(g);
@@ -216,7 +212,7 @@ private:
     Ort::MemoryInfo m_mem_info{nullptr};
 };
 
-}  // namespace
+} // namespace
 
 void Demo::init(std::string_view model_path)
 {
@@ -233,8 +229,9 @@ void Demo::init(std::string_view model_path)
     m_session = Ort::Session(m_env, model_path.data(), session_options);
 
     if (use_cuda) {
-        constexpr int device_id = 0;  // Might not work if you have multiple GPUs
-        m_mem_info = Ort::MemoryInfo("Cuda", OrtArenaAllocator, device_id, OrtMemTypeDefault);
+        constexpr int device_id = 0; // Might not work if you have multiple GPUs
+        m_mem_info =
+                Ort::MemoryInfo("Cuda", OrtArenaAllocator, device_id, OrtMemTypeDefault);
     } else {
         m_mem_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
     }
@@ -253,13 +250,15 @@ cv::Mat Demo::run(const cv::Mat& img)
     std::vector<float> input = generateInputTensorData(img, resize);
 
     auto input_shape = inputShape(resize.tensor_w, resize.tensor_h);
-    Ort::Value input_tensor = Ort::Value::CreateTensor(
-        m_mem_info, input.data(), input.size(), input_shape.data(), input_shape.size());
+    Ort::Value input_tensor =
+            Ort::Value::CreateTensor(m_mem_info, input.data(), input.size(),
+                                     input_shape.data(), input_shape.size());
 
     std::vector<float> output(resize.tensor_w * resize.tensor_h);
     auto output_shape = outputShape(resize.tensor_w, resize.tensor_h);
-    Ort::Value output_tensor = Ort::Value::CreateTensor(
-        m_mem_info, output.data(), output.size(), output_shape.data(), output_shape.size());
+    Ort::Value output_tensor =
+            Ort::Value::CreateTensor(m_mem_info, output.data(), output.size(),
+                                     output_shape.data(), output_shape.size());
 
     constexpr int64_t NUM_INPUTS = 1;
     constexpr std::array<const char*, NUM_INPUTS> INPUT_NAMES{"input"};
@@ -273,7 +272,7 @@ cv::Mat Demo::run(const cv::Mat& img)
     return readOutputTensorData(output, resize);
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
     if (argc != 3 && argc != 4) {
         printHelp();
@@ -335,7 +334,7 @@ int main(int argc, char *argv[])
     constexpr double alpha = 0.5;
     constexpr double beta = 1.0 - alpha;
     cv::Mat display;
-    cv::addWeighted(img, alpha, colored_mask, beta, /*gamma*/0, display);
+    cv::addWeighted(img, alpha, colored_mask, beta, /*gamma*/ 0, display);
 
     const std::string INPUT_NAME = "MODNet Demo";
     cv::namedWindow(INPUT_NAME, cv::WINDOW_NORMAL);

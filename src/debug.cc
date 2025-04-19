@@ -34,7 +34,8 @@ std::vector<NodeInfo> findInputNodeInfo(const Ort::Session& session)
     const size_t num_input_nodes = session.GetInputCount();
     result.reserve(num_input_nodes);
 
-    const auto memory_info = Ort::MemoryInfo::CreateCpu(OrtDeviceAllocator, OrtMemTypeCPU);
+    const auto memory_info =
+            Ort::MemoryInfo::CreateCpu(OrtDeviceAllocator, OrtMemTypeCPU);
     const Ort::Allocator allocator(session, memory_info);
 
     for (size_t i = 0; i < num_input_nodes; i++) {
@@ -61,7 +62,8 @@ std::vector<NodeInfo> findOutputNodeInfo(const Ort::Session& session)
     const size_t num_output_nodes = session.GetOutputCount();
     result.reserve(num_output_nodes);
 
-    const auto memory_info = Ort::MemoryInfo::CreateCpu(OrtDeviceAllocator, OrtMemTypeCPU);
+    const auto memory_info =
+            Ort::MemoryInfo::CreateCpu(OrtDeviceAllocator, OrtMemTypeCPU);
     const Ort::Allocator allocator(session, memory_info);
 
     for (size_t i = 0; i < num_output_nodes; i++) {

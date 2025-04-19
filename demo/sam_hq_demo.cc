@@ -74,7 +74,10 @@ enum class Label : int {
     BBOX_BOT_RIGHT = 3
 };
 
-auto inputImageShape(uint32_t width, uint32_t height) { return Shape<3>{height, width, 3}; }
+auto inputImageShape(uint32_t width, uint32_t height)
+{
+    return Shape<3>{height, width, 3};
+}
 
 std::pair<Shape<3>, Shape<2>> pointInputShapes(int64_t num_points)
 {
@@ -86,7 +89,7 @@ std::pair<Shape<3>, Shape<2>> pointInputShapes(int64_t num_points)
 
 auto outputMaskShape(int num_masks, uint32_t width, uint32_t height)
 {
-    return Shape<4>{/*batch*/1, num_masks, height, width};
+    return Shape<4>{/*batch*/ 1, num_masks, height, width};
 }
 
 constexpr auto iouPredictionsShape(int num_masks) { return Shape<2>{num_masks, 1}; }
@@ -111,9 +114,10 @@ struct Point {
 
 struct BBox {
     BBox() = default;
-    BBox(float x0, float y0, float x1, float y1) :
-        top_left(std::min(x0, x1), std::min(y0, y1)),
-        bot_right(std::max(x0, x1), std::max(y0, y1)) {}
+    BBox(float x0, float y0, float x1, float y1)
+            : top_left(std::min(x0, x1), std::min(y0, y1))
+            , bot_right(std::max(x0, x1), std::max(y0, y1))
+    {}
 
     Point top_left;
     Point bot_right;
@@ -128,11 +132,11 @@ struct Prompts {
 class Demo {
 public:
     Demo(std::string_view image_path, std::string_view encoder_path,
-         std::string_view decoder_path, std::string_view out_img_path) :
-        m_orig_img(cv::imread(std::string(image_path), cv::IMREAD_COLOR_BGR)),
-        m_encoder_path(encoder_path),
-        m_decoder_path(decoder_path),
-        m_out_img_path(out_img_path)
+         std::string_view decoder_path, std::string_view out_img_path)
+            : m_orig_img(cv::imread(std::string(image_path), cv::IMREAD_COLOR_BGR))
+            , m_encoder_path(encoder_path)
+            , m_decoder_path(decoder_path)
+            , m_out_img_path(out_img_path)
     {
         m_low_res_mask.fill(0);
 
@@ -236,31 +240,26 @@ void appendCudaProvider(Ort::SessionOptions& session_options)
     std::vector<const char*> keys{
         "device_id",
         // "gpu_mem_limit",
-        "arena_extend_strategy",
-        "cudnn_conv_algo_search",
-        "do_copy_in_default_stream",
+        "arena_extend_strategy", "cudnn_conv_algo_search", "do_copy_in_default_stream",
         "cudnn_conv_use_max_workspace"
         // "cudnn_conv1d_pad_to_nc1d"
     };
     std::vector<const char*> values{
         "0",
         // "2147483648",
-        "kNextPowerOfTwo",
-        "EXHAUSTIVE",
-        "1",
-        "1"
+        "kNextPowerOfTwo", "EXHAUSTIVE", "1", "1"
         // "1"
     };
 
-    Ort::ThrowOnError(api.UpdateCUDAProviderOptions(
-        cuda_options, keys.data(), values.data(), keys.size()));
-    Ort::ThrowOnError(api.SessionOptionsAppendExecutionProvider_CUDA_V2(
-        session_options, cuda_options));
+    Ort::ThrowOnError(api.UpdateCUDAProviderOptions(cuda_options, keys.data(),
+                                                    values.data(), keys.size()));
+    Ort::ThrowOnError(api.SessionOptionsAppendExecutionProvider_CUDA_V2(session_options,
+                                                                        cuda_options));
 
     api.ReleaseCUDAProviderOptions(cuda_options);
 }
 
-}  // namespace
+} // namespace
 
 void Demo::addPoint(float x, float y)
 {
@@ -290,7 +289,7 @@ void Demo::selectBBox()
     cv::namedWindow(name, cv::WINDOW_NORMAL);
     cv::resizeWindow(name, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-    cv::Rect rect = cv::selectROI(name, m_display_img, /*crosshair*/false);
+    cv::Rect rect = cv::selectROI(name, m_display_img, /*crosshair*/ false);
     cv::destroyWindow(name);
 
     if (!rect.empty()) {
@@ -336,7 +335,7 @@ void Demo::showOutput()
 
     constexpr double alpha = 0.5;
     constexpr double beta = 1.0 - alpha;
-    cv::addWeighted(m_orig_img, alpha, colored_mask, beta, /*gamma*/0, m_display_img);
+    cv::addWeighted(m_orig_img, alpha, colored_mask, beta, /*gamma*/ 0, m_display_img);
 
     for (const auto& p : m_prompts.include_points) {
         drawIncludePrompt(p);
@@ -437,38 +436,42 @@ void Demo::setupInference()
     m_encoded_image = EncodedImageTensor{};
 
     if (use_cuda) {
-        constexpr int device_id = 0;  // Might not work if you have multiple GPUs
-        m_encoded_image.mem_info = Ort::MemoryInfo(
-            "Cuda", OrtArenaAllocator, device_id, OrtMemTypeDefault);
+        constexpr int device_id = 0; // Might not work if you have multiple GPUs
+        m_encoded_image.mem_info =
+                Ort::MemoryInfo("Cuda", OrtArenaAllocator, device_id, OrtMemTypeDefault);
     } else {
-        m_encoded_image.mem_info = Ort::MemoryInfo::CreateCpu(
-            OrtArenaAllocator, OrtMemTypeDefault);
+        m_encoded_image.mem_info =
+                Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
     }
 
-    m_encoded_image.allocator = Ort::Allocator(m_encoder_session, m_encoded_image.mem_info);
+    m_encoded_image.allocator =
+            Ort::Allocator(m_encoder_session, m_encoded_image.mem_info);
 
     // Allocate encoder embeddings that remain on the execution provider device
     // instead of being copied back to the CPU.
     size_t num_output_nodes = m_encoder_session.GetOutputCount();
     if (num_output_nodes != 2) {
-        throw std::runtime_error("Model output must be image_embeddings and interm_embeddings");
+        throw std::runtime_error(
+                "Model output must be image_embeddings and interm_embeddings");
     }
 
     constexpr int IMAGE_EMBEDDINGS_INDEX = 0;
     constexpr int INTERM_EMBEDDINGS_INDEX = 1;
 
-    std::vector<int64_t> shape = m_encoder_session
-        .GetOutputTypeInfo(IMAGE_EMBEDDINGS_INDEX)
-        .GetTensorTypeAndShapeInfo().GetShape();
-    m_encoded_image.image_tensor = Ort::Value::CreateTensor(
-        m_encoded_image.allocator, shape.data(), shape.size(),
-        ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT);
+    std::vector<int64_t> shape =
+            m_encoder_session.GetOutputTypeInfo(IMAGE_EMBEDDINGS_INDEX)
+                    .GetTensorTypeAndShapeInfo()
+                    .GetShape();
+    m_encoded_image.image_tensor =
+            Ort::Value::CreateTensor(m_encoded_image.allocator, shape.data(),
+                                     shape.size(), ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT);
 
     shape = m_encoder_session.GetOutputTypeInfo(INTERM_EMBEDDINGS_INDEX)
-        .GetTensorTypeAndShapeInfo().GetShape();
-    m_encoded_image.interm_tensor = Ort::Value::CreateTensor(
-        m_encoded_image.allocator, shape.data(), shape.size(),
-        ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT);
+                    .GetTensorTypeAndShapeInfo()
+                    .GetShape();
+    m_encoded_image.interm_tensor =
+            Ort::Value::CreateTensor(m_encoded_image.allocator, shape.data(),
+                                     shape.size(), ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT);
 
     encodeImage();
 }
@@ -484,15 +487,16 @@ void Demo::encodeImage()
     m_resize.old_height = m_orig_img.size().height;
 
     // One side of the image must be ENCODER_SIZE (1024px) long.
-    m_resize.scale = m_resize.encoder_size / static_cast<double>(
-        std::max(m_resize.old_width, m_resize.old_height));
+    m_resize.scale =
+            m_resize.encoder_size
+            / static_cast<double>(std::max(m_resize.old_width, m_resize.old_height));
 
     m_resize.new_width = m_resize.scale * m_resize.old_width;
     m_resize.new_height = m_resize.scale * m_resize.old_height;
 
     fmt::println("Resizing input image from {}x{} to {}x{} (scale = {:.5})",
-                 m_resize.old_width, m_resize.old_height,
-                 m_resize.new_width, m_resize.new_height, m_resize.scale);
+                 m_resize.old_width, m_resize.old_height, m_resize.new_width,
+                 m_resize.new_height, m_resize.scale);
 
     cv::Mat resized_img;
     {
@@ -508,7 +512,8 @@ void Demo::encodeImage()
     }
 
     auto shape = inputImageShape(m_resize.new_width, m_resize.new_height);
-    auto input_image_tensor = Ort::Value::CreateTensor<float>(allocator, shape.data(), shape.size());
+    auto input_image_tensor =
+            Ort::Value::CreateTensor<float>(allocator, shape.data(), shape.size());
     float* data = input_image_tensor.GetTensorMutableData<float>();
 
     const uchar* mat_data = static_cast<uchar*>(resized_img.data);
@@ -554,46 +559,44 @@ void Demo::runInference()
     auto [coords, labels] = convertPrompts();
     auto [coords_shape, labels_shape] = pointInputShapes(labels.size());
 
-    auto point_coords_tensor = Ort::Value::CreateTensor(
-        mem_info, coords.data(), coords.size(),
-        coords_shape.data(), coords_shape.size());
+    auto point_coords_tensor =
+            Ort::Value::CreateTensor(mem_info, coords.data(), coords.size(),
+                                     coords_shape.data(), coords_shape.size());
 
-    auto point_labels_tensor = Ort::Value::CreateTensor(
-        mem_info, labels.data(), labels.size(),
-        labels_shape.data(), labels_shape.size());
+    auto point_labels_tensor =
+            Ort::Value::CreateTensor(mem_info, labels.data(), labels.size(),
+                                     labels_shape.data(), labels_shape.size());
 
     auto mask_input_tensor = Ort::Value::CreateTensor(
-        mem_info, m_low_res_mask.data(), m_low_res_mask.size(),
-        MASK_INPUT_SHAPE.data(), MASK_INPUT_SHAPE.size());
+            mem_info, m_low_res_mask.data(), m_low_res_mask.size(),
+            MASK_INPUT_SHAPE.data(), MASK_INPUT_SHAPE.size());
 
     std::array<float, 1> has_mask_input{m_has_mask_input ? 0.f : 1.f};
     auto has_mask_input_tensor = Ort::Value::CreateTensor(
-        mem_info, has_mask_input.data(), has_mask_input.size(),
-        HAS_MASK_INPUT_SHAPE.data(), HAS_MASK_INPUT_SHAPE.size());
+            mem_info, has_mask_input.data(), has_mask_input.size(),
+            HAS_MASK_INPUT_SHAPE.data(), HAS_MASK_INPUT_SHAPE.size());
 
-    std::array<float, 2> orig_im_size{
-        static_cast<float>(m_resize.old_height),
-        static_cast<float>(m_resize.old_width)
-    };
+    std::array<float, 2> orig_im_size{static_cast<float>(m_resize.old_height),
+                                      static_cast<float>(m_resize.old_width)};
     auto orig_im_size_tensor = Ort::Value::CreateTensor(
-        mem_info, orig_im_size.data(), orig_im_size.size(),
-        ORIG_IMG_SIZE_SHAPE.data(), ORIG_IMG_SIZE_SHAPE.size());
+            mem_info, orig_im_size.data(), orig_im_size.size(),
+            ORIG_IMG_SIZE_SHAPE.data(), ORIG_IMG_SIZE_SHAPE.size());
 
     constexpr int NUM_MASKS = 1;
 
     auto masks_output_shape =
-        outputMaskShape(NUM_MASKS, m_resize.old_width, m_resize.old_height);
+            outputMaskShape(NUM_MASKS, m_resize.old_width, m_resize.old_height);
     auto masks_output_tensor = Ort::Value::CreateTensor<float>(
-        allocator, masks_output_shape.data(), masks_output_shape.size());
+            allocator, masks_output_shape.data(), masks_output_shape.size());
 
     auto iou_shape = iouPredictionsShape(NUM_MASKS);
-    auto iou_tensor = Ort::Value::CreateTensor<float>(
-        allocator, iou_shape.data(), iou_shape.size());
+    auto iou_tensor = Ort::Value::CreateTensor<float>(allocator, iou_shape.data(),
+                                                      iou_shape.size());
 
     auto low_res_mask_shape = lowResMaskShape(NUM_MASKS);
-    auto low_res_mask_tensor = Ort::Value::CreateTensor<float>(mem_info,
-        m_low_res_mask.data(), m_low_res_mask.size(),
-        low_res_mask_shape.data(), low_res_mask_shape.size());
+    auto low_res_mask_tensor = Ort::Value::CreateTensor<float>(
+            mem_info, m_low_res_mask.data(), m_low_res_mask.size(),
+            low_res_mask_shape.data(), low_res_mask_shape.size());
 
     Ort::IoBinding io_binding(m_decoder_session);
     io_binding.BindInput("image_embeddings", m_encoded_image.image_tensor);
@@ -639,7 +642,8 @@ std::pair<std::vector<float>, std::vector<float>> Demo::convertPrompts() const
     std::vector<float> coords;
     std::vector<float> labels;
 
-    auto add = [&](const Point& p, Label label) {
+    auto add = [&](const Point& p, Label label)
+    {
         coords.push_back(p.x * m_resize.scale);
         coords.push_back(p.y * m_resize.scale);
         labels.push_back(static_cast<float>(label));
@@ -672,7 +676,7 @@ std::pair<std::vector<float>, std::vector<float>> Demo::convertPrompts() const
     return {std::move(coords), std::move(labels)};
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
     if (argc != 4 && argc != 5) {
         printHelp();

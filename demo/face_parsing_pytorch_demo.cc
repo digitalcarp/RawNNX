@@ -52,27 +52,17 @@ constexpr LabelInfo create(int id, const char* name, std::array<uint8_t, 3> colo
     return LabelInfo{name, id, color};
 }
 
-constexpr std::array<LabelInfo, 19> LABELS {
-    create(0, "background", {0, 0, 0}),
-    create(1, "skin", {255, 0, 0}),
-    create(2, "l_brow", {76, 153, 0}),
-    create(3, "r_brow", {204, 204, 0}),
-    create(4, "l_eye", {51, 51, 255}),
-    create(5, "r_eye", {204, 0, 204}),
-    create(6, "eye_g", {0, 255, 255}),
-    create(7, "l_ear", {255, 204, 204}),
-    create(8, "r_ear", {102, 51, 0}),
-    create(9, "ear_r", {255, 0, 0}),
-    create(10, "nose", {102, 204, 0}),
-    create(11, "mouth", {255, 255, 0}),
-    create(12, "u_lip", {0, 0, 153}),
-    create(13, "l_lip", {0, 0, 204}),
-    create(14, "neck", {255, 51, 153}),
-    create(15, "neck_l", {0, 204, 204}),
-    create(16, "cloth", {0, 51, 0}),
-    create(17, "hair", {255, 153, 51}),
-    create(18, "hat", {0, 204, 0})
-};
+constexpr std::array<LabelInfo, 19> LABELS{
+    create(0, "background", {0, 0, 0}), create(1, "skin", {255, 0, 0}),
+    create(2, "l_brow", {76, 153, 0}),  create(3, "r_brow", {204, 204, 0}),
+    create(4, "l_eye", {51, 51, 255}),  create(5, "r_eye", {204, 0, 204}),
+    create(6, "eye_g", {0, 255, 255}),  create(7, "l_ear", {255, 204, 204}),
+    create(8, "r_ear", {102, 51, 0}),   create(9, "ear_r", {255, 0, 0}),
+    create(10, "nose", {102, 204, 0}),  create(11, "mouth", {255, 255, 0}),
+    create(12, "u_lip", {0, 0, 153}),   create(13, "l_lip", {0, 0, 204}),
+    create(14, "neck", {255, 51, 153}), create(15, "neck_l", {0, 204, 204}),
+    create(16, "cloth", {0, 51, 0}),    create(17, "hair", {255, 153, 51}),
+    create(18, "hat", {0, 204, 0})};
 
 bool checkCudaSupport()
 {
@@ -93,26 +83,21 @@ void appendCudaProvider(Ort::SessionOptions& session_options)
     std::vector<const char*> keys{
         "device_id",
         // "gpu_mem_limit",
-        "arena_extend_strategy",
-        "cudnn_conv_algo_search",
-        "do_copy_in_default_stream",
+        "arena_extend_strategy", "cudnn_conv_algo_search", "do_copy_in_default_stream",
         "cudnn_conv_use_max_workspace"
         // "cudnn_conv1d_pad_to_nc1d"
     };
     std::vector<const char*> values{
         "0",
         // "2147483648",
-        "kNextPowerOfTwo",
-        "EXHAUSTIVE",
-        "1",
-        "1"
+        "kNextPowerOfTwo", "EXHAUSTIVE", "1", "1"
         // "1"
     };
 
-    Ort::ThrowOnError(api.UpdateCUDAProviderOptions(
-        cuda_options, keys.data(), values.data(), keys.size()));
-    Ort::ThrowOnError(api.SessionOptionsAppendExecutionProvider_CUDA_V2(
-        session_options, cuda_options));
+    Ort::ThrowOnError(api.UpdateCUDAProviderOptions(cuda_options, keys.data(),
+                                                    values.data(), keys.size()));
+    Ort::ThrowOnError(api.SessionOptionsAppendExecutionProvider_CUDA_V2(session_options,
+                                                                        cuda_options));
 
     api.ReleaseCUDAProviderOptions(cuda_options);
 }
@@ -177,10 +162,8 @@ std::vector<float> generateInputTensorData(const cv::Mat& img, const Resize& res
     constexpr double G_STD = 0.224;
     constexpr double B_STD = 0.225;
 
-
-    auto convert = [&](int value, double mean, double std) -> float {
-        return (divd(value, 255) - mean) / std;
-    };
+    auto convert = [&](int value, double mean, double std) -> float
+    { return (divd(value, 255) - mean) / std; };
 
     for (uint32_t row = 0; row < resize.new_h; row++) {
         for (uint32_t col = 0; col < resize.new_w; col++) {
@@ -189,9 +172,8 @@ std::vector<float> generateInputTensorData(const cv::Mat& img, const Resize& res
             uchar g = mat_data[row * resized_img.step + channels * col + 1];
             uchar r = mat_data[row * resized_img.step + channels * col + 2];
 
-            auto offset = [&](uint32_t transpose) {
-                return transpose * area + row * resize.new_w + col;
-            };
+            auto offset = [&](uint32_t transpose)
+            { return transpose * area + row * resize.new_w + col; };
 
             // This model doesn't use img.transpose(2, 0, 1)
             input[offset(0)] = convert(r, R_MEAN, R_STD);
@@ -238,7 +220,7 @@ private:
     Ort::MemoryInfo m_mem_info{nullptr};
 };
 
-}  // namespace
+} // namespace
 
 void Demo::init(std::string_view model_path)
 {
@@ -255,8 +237,9 @@ void Demo::init(std::string_view model_path)
     m_session = Ort::Session(m_env, model_path.data(), session_options);
 
     if (use_cuda) {
-        constexpr int device_id = 0;  // Might not work if you have multiple GPUs
-        m_mem_info = Ort::MemoryInfo("Cuda", OrtArenaAllocator, device_id, OrtMemTypeDefault);
+        constexpr int device_id = 0; // Might not work if you have multiple GPUs
+        m_mem_info =
+                Ort::MemoryInfo("Cuda", OrtArenaAllocator, device_id, OrtMemTypeDefault);
     } else {
         m_mem_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
     }
@@ -267,19 +250,21 @@ cv::Mat Demo::run(const cv::Mat& img)
     Resize resize = computeResize(img.size().width, img.size().height, TENSOR_SIZE);
 
     fmt::println("Resizing input image from {}x{} to {}x{} (scale = [{:.5}, {:.5}])",
-                 resize.img_w, resize.img_h, resize.new_w, resize.new_h,
-                 resize.x_scale, resize.y_scale);
+                 resize.img_w, resize.img_h, resize.new_w, resize.new_h, resize.x_scale,
+                 resize.y_scale);
 
     // Vectors initialize to zero which is unnecessary for our use cases.
     // Consider using a structure with different construct semantics.
     std::vector<float> input = generateInputTensorData(img, resize);
 
-    Ort::Value input_tensor = Ort::Value::CreateTensor(
-        m_mem_info, input.data(), input.size(), INPUT_SHAPE.data(), INPUT_SHAPE.size());
+    Ort::Value input_tensor =
+            Ort::Value::CreateTensor(m_mem_info, input.data(), input.size(),
+                                     INPUT_SHAPE.data(), INPUT_SHAPE.size());
 
     std::vector<int64_t> output(TENSOR_SIZE * TENSOR_SIZE);
-    Ort::Value output_tensor = Ort::Value::CreateTensor(
-        m_mem_info, output.data(), output.size(), OUTPUT_SHAPE.data(), OUTPUT_SHAPE.size());
+    Ort::Value output_tensor =
+            Ort::Value::CreateTensor(m_mem_info, output.data(), output.size(),
+                                     OUTPUT_SHAPE.data(), OUTPUT_SHAPE.size());
 
     constexpr int64_t NUM_INPUTS = 1;
     constexpr std::array<const char*, NUM_INPUTS> INPUT_NAMES{"input"};
@@ -293,7 +278,7 @@ cv::Mat Demo::run(const cv::Mat& img)
     return readOutputTensorData(output, resize);
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
     if (argc != 3 && argc != 4) {
         printHelp();
@@ -340,7 +325,7 @@ int main(int argc, char *argv[])
     constexpr double alpha = 0.5;
     constexpr double beta = 1.0 - alpha;
     cv::Mat display;
-    cv::addWeighted(img, alpha, mask, beta, /*gamma*/0, display);
+    cv::addWeighted(img, alpha, mask, beta, /*gamma*/ 0, display);
 
     const std::string WINDOW = "BiSeNet Face Parsing Demo";
     cv::namedWindow(WINDOW, cv::WINDOW_NORMAL);

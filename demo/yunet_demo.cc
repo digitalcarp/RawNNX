@@ -23,7 +23,8 @@ namespace {
 
 void printHelp()
 {
-    fmt::println(R"(Usage: yunet <model_path> <tensor_size> <conf> <nms> <image> [<output>]
+    fmt::println(
+            R"(Usage: yunet <model_path> <tensor_size> <conf> <nms> <image> [<output>]
 
     tensor_size    The width and height dimensions of the model.
                    Use an integer <= 0 for automatic sizing based on image size.
@@ -87,26 +88,21 @@ void appendCudaProvider(Ort::SessionOptions& session_options)
     std::vector<const char*> keys{
         "device_id",
         // "gpu_mem_limit",
-        "arena_extend_strategy",
-        "cudnn_conv_algo_search",
-        "do_copy_in_default_stream",
+        "arena_extend_strategy", "cudnn_conv_algo_search", "do_copy_in_default_stream",
         "cudnn_conv_use_max_workspace"
         // "cudnn_conv1d_pad_to_nc1d"
     };
     std::vector<const char*> values{
         "0",
         // "2147483648",
-        "kNextPowerOfTwo",
-        "EXHAUSTIVE",
-        "1",
-        "1"
+        "kNextPowerOfTwo", "EXHAUSTIVE", "1", "1"
         // "1"
     };
 
-    Ort::ThrowOnError(api.UpdateCUDAProviderOptions(
-        cuda_options, keys.data(), values.data(), keys.size()));
-    Ort::ThrowOnError(api.SessionOptionsAppendExecutionProvider_CUDA_V2(
-        session_options, cuda_options));
+    Ort::ThrowOnError(api.UpdateCUDAProviderOptions(cuda_options, keys.data(),
+                                                    values.data(), keys.size()));
+    Ort::ThrowOnError(api.SessionOptionsAppendExecutionProvider_CUDA_V2(session_options,
+                                                                        cuda_options));
 
     api.ReleaseCUDAProviderOptions(cuda_options);
 }
@@ -201,9 +197,8 @@ std::vector<float> generateInputTensorData(const cv::Mat& img, const Resize& res
             uchar g = mat_data[row * resized_img.step + channels * col + 1];
             uchar r = mat_data[row * resized_img.step + channels * col + 2];
 
-            auto offset = [&](uint32_t transpose) {
-                return transpose * area + row * resize.tensor_w + col;
-            };
+            auto offset = [&](uint32_t transpose)
+            { return transpose * area + row * resize.tensor_w + col; };
 
             input[offset(R_TRANSPOSE)] = convert(r);
             input[offset(G_TRANSPOSE)] = convert(g);
@@ -245,7 +240,8 @@ FeatureMap generateFeatureMap(size_t stride, std::vector<Ort::Value>& tensors,
     auto kps_shape = kpsShape(num_features);
 
     // Sets the data backing array, appends the tensor, and returns the index
-    auto create = [&](std::vector<float>& data, const auto& shape) -> size_t {
+    auto create = [&](std::vector<float>& data, const auto& shape) -> size_t
+    {
         size_t total_len = 1;
         for (auto dim : shape) {
             total_len *= dim;
@@ -253,8 +249,8 @@ FeatureMap generateFeatureMap(size_t stride, std::vector<Ort::Value>& tensors,
         data.resize(total_len, 0.f);
 
         size_t index = tensors.size();
-        tensors.push_back(Ort::Value::CreateTensor(
-            mem_info, data.data(), data.size(), shape.data(), shape.size()));
+        tensors.push_back(Ort::Value::CreateTensor(mem_info, data.data(), data.size(),
+                                                   shape.data(), shape.size()));
 
         return index;
     };
@@ -335,7 +331,8 @@ void parseBBoxScore(const FeatureMap& feat, float conf_threshold, Faces& faces)
 
             // Decode landmarks using prior box
             const size_t kps_offset = offset * KPS_DIM;
-            auto point = [&](size_t n) {
+            auto point = [&](size_t n)
+            {
                 Point p;
                 p.x = feat.kps[kps_offset + 2 * n + 0] * fstride + prior_box_x;
                 p.y = feat.kps[kps_offset + 2 * n + 1] * fstride + prior_box_y;

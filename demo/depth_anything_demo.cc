@@ -71,26 +71,21 @@ void appendCudaProvider(Ort::SessionOptions& session_options)
     std::vector<const char*> keys{
         "device_id",
         // "gpu_mem_limit",
-        "arena_extend_strategy",
-        "cudnn_conv_algo_search",
-        "do_copy_in_default_stream",
+        "arena_extend_strategy", "cudnn_conv_algo_search", "do_copy_in_default_stream",
         "cudnn_conv_use_max_workspace"
         // "cudnn_conv1d_pad_to_nc1d"
     };
     std::vector<const char*> values{
         "0",
         // "2147483648",
-        "kNextPowerOfTwo",
-        "EXHAUSTIVE",
-        "1",
-        "1"
+        "kNextPowerOfTwo", "EXHAUSTIVE", "1", "1"
         // "1"
     };
 
-    Ort::ThrowOnError(api.UpdateCUDAProviderOptions(
-        cuda_options, keys.data(), values.data(), keys.size()));
-    Ort::ThrowOnError(api.SessionOptionsAppendExecutionProvider_CUDA_V2(
-        session_options, cuda_options));
+    Ort::ThrowOnError(api.UpdateCUDAProviderOptions(cuda_options, keys.data(),
+                                                    values.data(), keys.size()));
+    Ort::ThrowOnError(api.SessionOptionsAppendExecutionProvider_CUDA_V2(session_options,
+                                                                        cuda_options));
 
     api.ReleaseCUDAProviderOptions(cuda_options);
 }
@@ -144,8 +139,10 @@ Resize computeResize(int img_w, int img_h, int tensor_size)
     resize.img_w = img_w;
     resize.img_h = img_h;
 
-    resize.tensor_w = constrainToMultipleMin(scale_w * img_w, TENSOR_MULTIPLE, tensor_size);
-    resize.tensor_h = constrainToMultipleMin(scale_h * img_h, TENSOR_MULTIPLE, tensor_size);
+    resize.tensor_w =
+            constrainToMultipleMin(scale_w * img_w, TENSOR_MULTIPLE, tensor_size);
+    resize.tensor_h =
+            constrainToMultipleMin(scale_h * img_h, TENSOR_MULTIPLE, tensor_size);
 
     resize.x_scale = divd(resize.tensor_w, resize.img_w);
     resize.y_scale = divd(resize.tensor_h, resize.img_h);
@@ -155,7 +152,8 @@ Resize computeResize(int img_w, int img_h, int tensor_size)
 
 std::vector<float> generateInputTensorData(const cv::Mat& img, const Resize& resize)
 {
-    cv::Size new_size{static_cast<int>(resize.tensor_w), static_cast<int>(resize.tensor_h)};
+    cv::Size new_size{static_cast<int>(resize.tensor_w),
+                      static_cast<int>(resize.tensor_h)};
     cv::Mat resized_img;
     cv::resize(img, resized_img, new_size, 0, 0, cv::INTER_CUBIC);
 
@@ -179,7 +177,8 @@ std::vector<float> generateInputTensorData(const cv::Mat& img, const Resize& res
     constexpr uint32_t G_TRANSPOSE = 2;
     constexpr uint32_t B_TRANSPOSE = 0;
 
-    auto convert = [](int value, double mean, double std) -> float {
+    auto convert = [](int value, double mean, double std) -> float
+    {
         double x = (divd(value, 255) - mean) / std;
         return std::clamp<float>(x, 0, 1);
     };
@@ -191,9 +190,8 @@ std::vector<float> generateInputTensorData(const cv::Mat& img, const Resize& res
             uchar g = mat_data[row * resized_img.step + channels * col + 1];
             uchar r = mat_data[row * resized_img.step + channels * col + 2];
 
-            auto offset = [&](uint32_t transpose) {
-                return transpose * area + row * resize.tensor_w + col;
-            };
+            auto offset = [&](uint32_t transpose)
+            { return transpose * area + row * resize.tensor_w + col; };
 
             input[offset(R_TRANSPOSE)] = convert(r, R_MEAN, R_STD);
             input[offset(G_TRANSPOSE)] = convert(g, G_MEAN, G_STD);
@@ -244,7 +242,7 @@ private:
     const Args& m_args;
 };
 
-}  // namespace
+} // namespace
 
 void Demo::init()
 {
@@ -261,8 +259,9 @@ void Demo::init()
     m_session = Ort::Session(m_env, m_args.model_path.data(), session_options);
 
     if (use_cuda) {
-        constexpr int device_id = 0;  // Might not work if you have multiple GPUs
-        m_mem_info = Ort::MemoryInfo("Cuda", OrtArenaAllocator, device_id, OrtMemTypeDefault);
+        constexpr int device_id = 0; // Might not work if you have multiple GPUs
+        m_mem_info =
+                Ort::MemoryInfo("Cuda", OrtArenaAllocator, device_id, OrtMemTypeDefault);
     } else {
         m_mem_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
     }
@@ -270,7 +269,8 @@ void Demo::init()
 
 cv::Mat Demo::run(const cv::Mat& img)
 {
-    Resize resize = computeResize(img.size().width, img.size().height, m_args.tensor_size);
+    Resize resize =
+            computeResize(img.size().width, img.size().height, m_args.tensor_size);
 
     fmt::println("Resizing input image from {}x{} to {}x{} (scale = [{:.5}, {:.5}])",
                  resize.img_w, resize.img_h, resize.tensor_w, resize.tensor_h,
@@ -281,13 +281,15 @@ cv::Mat Demo::run(const cv::Mat& img)
     std::vector<float> input = generateInputTensorData(img, resize);
 
     auto input_shape = inputShape(resize.tensor_w, resize.tensor_h);
-    Ort::Value input_tensor = Ort::Value::CreateTensor(
-        m_mem_info, input.data(), input.size(), input_shape.data(), input_shape.size());
+    Ort::Value input_tensor =
+            Ort::Value::CreateTensor(m_mem_info, input.data(), input.size(),
+                                     input_shape.data(), input_shape.size());
 
     std::vector<float> output(resize.tensor_w * resize.tensor_h);
     auto output_shape = outputShape(resize.tensor_w, resize.tensor_h);
-    Ort::Value output_tensor = Ort::Value::CreateTensor(
-        m_mem_info, output.data(), output.size(), output_shape.data(), output_shape.size());
+    Ort::Value output_tensor =
+            Ort::Value::CreateTensor(m_mem_info, output.data(), output.size(),
+                                     output_shape.data(), output_shape.size());
 
     constexpr int64_t NUM_INPUTS = 1;
     constexpr std::array<const char*, NUM_INPUTS> INPUT_NAMES{"image"};
@@ -301,7 +303,7 @@ cv::Mat Demo::run(const cv::Mat& img)
     return readOutputTensorData(output, resize);
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
     if (argc != 4 && argc != 5) {
         printHelp();
@@ -317,14 +319,16 @@ int main(int argc, char *argv[])
     const std::string tensor_size_str = argv[2];
     const std::string image_path = argv[3];
 
-    auto parse = [](const auto& str) -> int64_t {
+    auto parse = [](const auto& str) -> int64_t
+    {
         try {
             int64_t len = std::stoi(str);
             if (len <= 0) {
                 fmt::println("Value {} must be an integer greater than 0", len);
                 std::exit(-1);
             } else if (len % TENSOR_MULTIPLE != 0) {
-                fmt::println("Tensor size {} must be a multiple of {}", len, TENSOR_MULTIPLE);
+                fmt::println("Tensor size {} must be a multiple of {}", len,
+                             TENSOR_MULTIPLE);
                 std::exit(-1);
             }
 
