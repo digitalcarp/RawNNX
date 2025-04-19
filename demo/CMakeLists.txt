@@ -33,4 +33,7 @@ if(rawnnx_BUILD_DEMOS)
     rnx_setup_standalone_demo(modnet modnet_demo.cc)
     rnx_setup_standalone_demo(sam-hq sam_hq_demo.cc)
     rnx_setup_standalone_demo(u2net u2net_demo.cc)
+
+    rnx_setup_standalone_demo(yunet yunet_demo.cc)
+    target_link_libraries(yunet PRIVATE opencv_dnn)
 endif()
