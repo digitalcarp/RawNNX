@@ -4,6 +4,9 @@ RawNNX (pronounced raw-nicks) is an ML-based image processing library/plugin
 using the ONNX runtime developed for use in raster-based image/RAW editing
 software.
 
+Please visit the [wiki](https://github.com/digitalcarp/RawNNX/wiki) for usage
+and installation instructions.
+
 ## License
 
 RawNNX is licensed under the [Apache-2.0 License](LICENSE). This licensing
